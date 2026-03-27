@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Student\ProjectController;
+use App\Http\Controllers\Student\MilestoneController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -32,26 +34,36 @@ Route::middleware(['auth'])->group(function () {
         return view('supervisor.dashboard');
     })->name('supervisor.dashboard');
 });
-// Supervisor routes
+
+// Supervisor projects routes
 Route::middleware(['auth'])->prefix('supervisor')->name('supervisor.')->group(function () {
     Route::get('/projects', function () {
         return view('supervisor.projects.index');
     })->name('projects');
 });
+
 // Admin routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin/dashboard', function () {
         return view('admin.dashboard');
     })->name('admin.dashboard');
 });
+
 // Student Project Routes
 Route::middleware(['auth'])->prefix('student')->name('student.')->group(function () {
-    Route::resource('projects', App\Http\Controllers\Student\ProjectController::class);
-    Route::post('/projects/{project}/add-member', [App\Http\Controllers\Student\ProjectController::class, 'addMember'])->name('projects.addMember');
-    Route::delete('/projects/{project}/remove-member/{user}', [App\Http\Controllers\Student\ProjectController::class, 'removeMember'])->name('projects.removeMember');
-
-    Route::resource('projects.milestones', App\Http\Controllers\Student\MilestoneController::class)->shallow();
+    // Project routes
+    Route::resource('projects', ProjectController::class);
+    Route::post('/projects/{project}/add-member', [ProjectController::class, 'addMember'])->name('projects.addMember');
+    Route::delete('/projects/{project}/remove-member/{user}', [ProjectController::class, 'removeMember'])->name('projects.removeMember');
+    
+    // Milestone routes (explicit)
+    Route::get('/projects/{project}/milestones/create', [MilestoneController::class, 'create'])->name('milestones.create');
+    Route::post('/projects/{project}/milestones', [MilestoneController::class, 'store'])->name('milestones.store');
+    Route::get('/milestones/{milestone}/edit', [MilestoneController::class, 'edit'])->name('milestones.edit');
+    Route::put('/milestones/{milestone}', [MilestoneController::class, 'update'])->name('milestones.update');
+    Route::delete('/milestones/{milestone}', [MilestoneController::class, 'destroy'])->name('milestones.destroy');
 });
+
 // Profile routes (from Breeze)
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
