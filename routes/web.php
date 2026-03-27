@@ -39,7 +39,14 @@ Route::middleware(['auth'])->group(function () {
         return view('admin.dashboard');
     })->name('admin.dashboard');
 });
+// Student Project Routes
+Route::middleware(['auth'])->prefix('student')->name('student.')->group(function () {
+    Route::resource('projects', App\Http\Controllers\Student\ProjectController::class);
+    Route::post('/projects/{project}/add-member', [App\Http\Controllers\Student\ProjectController::class, 'addMember'])->name('projects.addMember');
+    Route::delete('/projects/{project}/remove-member/{user}', [App\Http\Controllers\Student\ProjectController::class, 'removeMember'])->name('projects.removeMember');
 
+    Route::resource('projects.milestones', App\Http\Controllers\Student\MilestoneController::class)->shallow();
+});
 // Profile routes (from Breeze)
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
