@@ -32,7 +32,12 @@ Route::middleware(['auth'])->group(function () {
         return view('supervisor.dashboard');
     })->name('supervisor.dashboard');
 });
-
+// Supervisor routes
+Route::middleware(['auth'])->prefix('supervisor')->name('supervisor.')->group(function () {
+    Route::get('/projects', function () {
+        return view('supervisor.projects.index');
+    })->name('projects');
+});
 // Admin routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin/dashboard', function () {
