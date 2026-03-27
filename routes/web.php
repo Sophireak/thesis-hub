@@ -3,27 +3,48 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/', function () {
+    return view('welcome');
+});
+
 Route::get('/dashboard', function () {
     if (auth()->user()->isStudent()) {
         return redirect()->route('student.dashboard');
     } elseif (auth()->user()->isSupervisor()) {
         return redirect()->route('supervisor.dashboard');
+    } elseif (auth()->user()->isAdmin()) {
+        return redirect()->route('admin.dashboard');
     }
-    return redirect()->route('admin.dashboard');
+
+    return redirect()->route('login');
 })->middleware(['auth'])->name('dashboard');
 
+// Student routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/student/dashboard', function () {
         return view('student.dashboard');
     })->name('student.dashboard');
+});
 
+// Supervisor routes
+Route::middleware(['auth'])->group(function () {
     Route::get('/supervisor/dashboard', function () {
         return view('supervisor.dashboard');
     })->name('supervisor.dashboard');
+});
 
+// Admin routes
+Route::middleware(['auth'])->group(function () {
     Route::get('/admin/dashboard', function () {
         return view('admin.dashboard');
     })->name('admin.dashboard');
+});
+
+// Profile routes (from Breeze)
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 require __DIR__ . '/auth.php';
