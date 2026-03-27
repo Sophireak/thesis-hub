@@ -55,7 +55,11 @@ Route::middleware(['auth'])->prefix('student')->name('student.')->group(function
     Route::resource('projects', ProjectController::class);
     Route::post('/projects/{project}/add-member', [ProjectController::class, 'addMember'])->name('projects.addMember');
     Route::delete('/projects/{project}/remove-member/{user}', [ProjectController::class, 'removeMember'])->name('projects.removeMember');
-    
+    Route::get('/projects/{project}/confirm-delete', [ProjectController::class, 'confirmDelete'])->name('projects.confirmDelete');
+    Route::post('/projects/{project}/suspend', [ProjectController::class, 'suspend'])->name('projects.suspend');
+    Route::post('/projects/{project}/restore', [ProjectController::class, 'restore'])->name('projects.restore');
+    Route::post('/projects/{project}/archive', [ProjectController::class, 'archive'])->name('projects.archive');
+
     // Milestone routes (explicit)
     Route::get('/projects/{project}/milestones/create', [MilestoneController::class, 'create'])->name('milestones.create');
     Route::post('/projects/{project}/milestones', [MilestoneController::class, 'store'])->name('milestones.store');

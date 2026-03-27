@@ -137,4 +137,98 @@ class ProjectController extends Controller
 
         return back()->with('success', 'Team member removed successfully.');
     }
+
+    /**
+ * Show delete confirmation page
+ */
+public function confirmDelete(Project $project)
+{
+    // Only leader can delete
+    if (!$project->isLeader(auth()->id())) {
+        abort(403, 'Only the project leader can delete this project.');
+    }
+    
+    return view('student.projects.confirm-delete', compact('project'));
+}
+
+/**
+ * Delete the project
+ */
+public function destroy(Project $project)
+{
+    // Only leader can delete
+    if (!$project->isLeader(auth()->id())) {
+        abort(403, 'Only the project leader can delete this project.');
+    }
+    
+    // Delete project (will cascade delete milestones and pivot records)
+    $project->delete();
+    
+    return redirect()->route('student.projects.index')
+        ->with('success', 'Project deleted successfully!');
+}
+
+/**
+ * Suspend/cancel the project
+ */
+public function suspend(Project $project)
+{
+    // Only leader can suspend
+    if (!$project->isLeader(auth()->id())) {
+        abort(403, 'Only the project leader can suspend this project.');
+    }
+    
+    // Only allow suspension if project is not already completed or rejected
+    if (in_array($project->status, ['completed', 'rejected'])) {
+        return back()->with('error', 'This project cannot be suspended.');
+    }
+    
+    $project->update(['status' => 'rejected']);
+    
+    return redirect()->route('student.projects.show', $project)
+        ->with('success', 'Project has been suspended.');
+}
+
+/**
+ * Archive completed project
+ */
+public function archive(Project $project)
+{
+    // Only leader can archive
+    if (!$project->isLeader(auth()->id())) {
+        abort(403, 'Only the project leader can archive this project.');
+    }
+    
+    // Only allow archiving if project is completed
+    if ($project->status !== 'completed') {
+        return back()->with('error', 'Only completed projects can be archived.');
+    }
+    
+    // You can add an archived_at field, or just keep status as completed
+    // For now, we'll just redirect with message
+    
+    return redirect()->route('student.projects.show', $project)
+        ->with('info', 'Project is already marked as completed.');
+}
+/**
+ * Restore a suspended project
+ */
+public function restore(Project $project)
+{
+    // Only leader can restore
+    if (!$project->isLeader(auth()->id())) {
+        abort(403, 'Only the project leader can restore this project.');
+    }
+    
+    // Only allow restore if project is rejected (suspended)
+    if ($project->status !== 'rejected') {
+        return back()->with('error', 'Only suspended projects can be restored.');
+    }
+    
+    // Restore to planning status
+    $project->update(['status' => 'planning']);
+    
+    return redirect()->route('student.projects.show', $project)
+        ->with('success', 'Project has been restored successfully!');
+}
 }

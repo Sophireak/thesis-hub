@@ -1,17 +1,47 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ $project->title }}
-            </h2>
-            @if($project->isLeader(Auth::id()))
-                <a href="{{ route('student.projects.edit', $project) }}" 
-                   class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg text-sm">
-                    Edit Project
+    <div class="flex justify-between items-center">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ $project->title }}
+        </h2>
+        @if($project->isLeader(Auth::id()))
+            <div class="flex space-x-2">
+                @if($project->status != 'rejected')
+                    <a href="{{ route('student.projects.edit', $project) }}" 
+                       class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg text-sm">
+                        Edit
+                    </a>
+                @endif
+                
+                @if($project->status == 'rejected')
+                    <form method="POST" action="{{ route('student.projects.restore', $project) }}">
+                        @csrf
+                        <button type="submit" 
+                                class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg text-sm">
+                            🔄 Restore Project
+                        </button>
+                    </form>
+                @endif
+                
+                @if($project->status != 'rejected' && $project->status != 'completed')
+                    <form method="POST" action="{{ route('student.projects.suspend', $project) }}">
+                        @csrf
+                        <button type="submit" 
+                                class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg text-sm"
+                                onclick="return confirm('Suspend this project? It can be restored later.')">
+                            Suspend
+                        </button>
+                    </form>
+                @endif
+                
+                <a href="{{ route('student.projects.confirmDelete', $project) }}" 
+                   class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg text-sm">
+                    Delete
                 </a>
-            @endif
-        </div>
-    </x-slot>
+            </div>
+        @endif
+    </div>
+</x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -47,6 +77,39 @@
                         </div>
                     </div>
                     
+                            <!-- Status Banner -->
+        @if($project->status == 'rejected')
+            <div class="mb-4 p-3 rounded-lg bg-red-100 border border-red-300">
+                <p class="text-center font-semibold text-red-800">
+                    🚫 This project has been suspended
+                </p>
+            </div>
+        @elseif($project->status == 'completed')
+            <div class="mb-4 p-3 rounded-lg bg-green-100 border border-green-300">
+                <p class="text-center font-semibold text-green-800">
+                    ✅ This project is completed
+                </p>
+            </div>
+        @elseif($project->status == 'in_progress')
+            <div class="mb-4 p-3 rounded-lg bg-blue-100 border border-blue-300">
+                <p class="text-center font-semibold text-blue-800">
+                    🔄 This project is in progress
+                </p>
+            </div>
+        @elseif($project->status == 'review')
+            <div class="mb-4 p-3 rounded-lg bg-purple-100 border border-purple-300">
+                <p class="text-center font-semibold text-purple-800">
+                    📝 This project is under review
+                </p>
+            </div>
+        @else
+            <div class="mb-4 p-3 rounded-lg bg-yellow-100 border border-yellow-300">
+                <p class="text-center font-semibold text-yellow-800">
+                    📋 This project is in planning stage
+                </p>
+            </div>
+        @endif
+
                     <div class="mb-4">
                         <p class="text-gray-500 text-sm">Description</p>
                         <p class="mt-1">{{ $project->description }}</p>
