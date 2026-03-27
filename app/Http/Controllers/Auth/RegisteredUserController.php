@@ -28,24 +28,35 @@ class RegisteredUserController extends Controller
      *
      * @throws ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(RegisterRequest $request)
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
-
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => $request->role,
         ]);
 
-        event(new Registered($user));
+        if ($request->role === 'student') {
+            StudentProfile::create([
+                'user_id' => $user->id,
+                'student_id' => $request->student_id,
+                'department' => $request->department,
+                'academic_year' => $request->academic_year,
+                'phone_number' => $request->phone_number,
+            ]);
+        } else {
+            SupervisorProfile::create([
+                'user_id' => $user->id,
+                'department' => $request->department,
+                'office_room' => $request->office_room,
+                'max_students' => $request->max_students,
+            ]);
+        }
 
+        event(new Registered($user));
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect()->route('dashboard');
     }
 }
